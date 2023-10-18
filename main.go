@@ -8,33 +8,46 @@ import (
 )
 
 func main() {
-	machine.GP0.Configure(machine.PinConfig{Mode: machine.PinOutput})
-	numPixels := 24
-	devices := []device.Device{
-		// device.New(machine.GP0, ws2812.SK6812, numPixels),
-		// ws2812.New(machine.GP0), //, ws2812.SK6812, numPixels),
-		device.NewDevice(machine.GP0, numPixels),
-	}
-
-	wait := time.Millisecond * 50
-
-	// clear any colors that might still be set if the device just restarted
-	for _, ring := range devices {
-		clear(ring, numPixels)
-	}
+	devices := setupDevices()
 	effects := setupEffects()
-	e := 0
-	effectDuration := time.Second * 10
-	start := time.Now()
-	var since time.Duration
+
+	orchestrator := Orchestrator{
+		effectDuration:  time.Millisecond * 50,
+		refreshDuration: time.Second * 10,
+	}
+
+	orchestrator.Start(devices, effects)
+}
+
+type Orchestrator struct {
+	effectDuration  time.Duration
+	refreshDuration time.Duration
+}
+
+func (o Orchestrator) Start(devices []device.Device, effects []effects.Effect) {
+	var (
+		e     = 0
+		start = time.Now()
+		since time.Duration
+	)
 	for {
 		since = time.Since(start)
-		e = (int(since / effectDuration)) % len(effects)
+		e = (int(since / o.effectDuration)) % len(effects)
 		for _, ring := range devices {
 			effects[e].Draw(since, ring)
 		}
-		time.Sleep(wait)
+		time.Sleep(o.refreshDuration)
 	}
+}
+
+func setupDevices() (devices []device.Device) {
+	devices = []device.Device{
+		device.NewDevice(machine.GP0, 24),
+	}
+	for _, ring := range devices {
+		clear(ring)
+	}
+	return
 }
 
 func setupEffects() (eff []effects.Effect) {
@@ -104,7 +117,7 @@ func setupEffects() (eff []effects.Effect) {
 	return
 }
 
-func clear(device device.Device, numPixels int) {
-	device.Write(make([]byte, numPixels*4))
+func clear(device device.Device) {
+	device.Write(make([]byte, device.NumPixels*4))
 	time.Sleep(time.Millisecond * 50)
 }
