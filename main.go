@@ -12,8 +12,8 @@ func main() {
 	effects := setupEffects()
 
 	orchestrator := Orchestrator{
-		effectDuration:  time.Millisecond * 50,
-		refreshDuration: time.Second * 10,
+		refreshDuration: time.Millisecond * 50,
+		effectDuration:  time.Second * 10,
 	}
 
 	orchestrator.Start(devices, effects)
@@ -51,7 +51,6 @@ func setupDevices() (devices []device.Device) {
 }
 
 func setupEffects() (eff []effects.Effect) {
-
 	// s := effects.Spread{
 	// 	period: time.Millisecond * 250,
 	// 	colors: [][]byte{
