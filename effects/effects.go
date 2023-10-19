@@ -30,11 +30,11 @@ func add(c1, c2 []byte) (c3 []byte) {
 func writeBlinkErr(d device.Device, b []byte) {
 	_, err := d.Write(b)
 	if err != nil {
-		blinkLED()
+		BlinkLED()
 	}
 }
 
-func blinkLED() {
+func BlinkLED() {
 	led := machine.LED
 	led.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	wait := time.Millisecond * 500
@@ -67,7 +67,7 @@ func (s Swirl) Draw(t time.Duration, d device.Device) {
 	colors := cycleTime[[][][]byte](t, s.ColorPeriod, s.ColorSets)
 	pixels := make([]byte, 0, d.NumPixels*4)
 	for _, color := range colors {
-		pixels = append(pixels, lightFade(d.NumPixels/len(colors), color)...)
+		pixels = append(pixels, lightFade(d.NumPixels/len(colors), color, s.Direction)...)
 	}
 	pixels = rotateTime(t, s.Period, pixels, s.Direction)
 	writeBlinkErr(d, pixels)
@@ -132,12 +132,20 @@ func repeat(pixels []byte, n int) []byte {
 	return pixels
 }
 
-func lightFade(size int, color []byte) (pixels []byte) {
+func lightFade(size int, color []byte, direction Direction) (pixels []byte) {
 	pixels = make([]byte, 0, size)
+	var (
+		s float32
+		c byte
+	)
+	if direction == CounterClockwise {
+		s = 1
+	}
 	for i := 0; i < size; i++ {
 		color = color
-		for c := range color {
-			pixels = append(pixels, uint8(float64(color[c])*(float64(i)/float64(size)))) // byte(float64(d.min) + float64(d.max-d.min)*(float64(len(partition))/float64(i+1)))
+		for _, c = range color {
+			// if ccw -> *(1 - ratio), if cw -> *(0 + ratio)
+			pixels = append(pixels, uint8(float32(c)*(s+(-1.0*float32(direction))*(float32(i)/float32(size))))) // byte(float64(d.min) + float64(d.max-d.min)*(float64(len(partition))/float64(i+1)))
 		}
 	}
 

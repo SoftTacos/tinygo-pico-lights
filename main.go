@@ -40,16 +40,21 @@ func (o Orchestrator) Start(devices []device.Device, effects []effects.Effect) {
 	}
 }
 
+// config the LED strip hardware
 func setupDevices() (devices []device.Device) {
 	devices = []device.Device{
-		device.NewDevice(machine.GP0, 24),
+		device.NewDevice(machine.GP0, 24), // right
+		// device.NewDevice(machine.GP1, 24), // left
 	}
+
+	// set all LEDs on all strips to 0-value
 	for _, ring := range devices {
 		clear(ring)
 	}
 	return
 }
 
+// config the difference LED effects/animations you want to have on the LED strips
 func setupEffects() (eff []effects.Effect) {
 	// s := effects.Spread{
 	// 	period: time.Millisecond * 250,
@@ -60,25 +65,26 @@ func setupEffects() (eff []effects.Effect) {
 	// 	numPixels: 24,
 	// }
 	eff = []effects.Effect{
-		effects.Band{
-			ColorSets: [][][]byte{
-				{
-					{255, 0, 255, 0},
-					{255, 0, 255, 0},
-				},
-				{
-					{0, 0, 255, 255},
-					{0, 0, 255, 255},
-				},
-			},
-			BandSize:    5,
-			Period:      time.Millisecond * 100,
-			Direction:   effects.Clockwise,
-			ColorPeriod: time.Second * 3,
-		},
+		// effects.Band{
+		// 	ColorSets: [][][]byte{
+		// 		{
+		// 			{255, 0, 255, 0},
+		// 			{255, 0, 255, 0},
+		// 		},
+		// 		{
+		// 			{0, 0, 255, 255},
+		// 			{0, 0, 255, 255},
+		// 		},
+		// 	},
+		// 	BandSize:    5,
+		// 	Period:      time.Millisecond * 100,
+		// 	Direction:   effects.Clockwise,
+		// 	ColorPeriod: time.Second * 3,
+		// },
 		effects.Swirl{
 			Period:      time.Millisecond * 65,
 			ColorPeriod: time.Second * 3,
+			Direction:   effects.Clockwise,
 			ColorSets: [][][]byte{
 				{
 					[]byte{0, 100, 255, 0},
@@ -110,7 +116,6 @@ func setupEffects() (eff []effects.Effect) {
 					[]byte{255, 0, 255, 0},
 				},
 			},
-			Direction: effects.Clockwise,
 		},
 	}
 	return
